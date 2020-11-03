@@ -1,0 +1,21 @@
+[general]
+name=Fonctions SIGMOÉ
+qgisMinimumVersion=3.10
+qgisMaximumVersion=3.99
+description=New functions usable for automatic calculation in the expression builder
+about=Adds additional functions to the QGIS expression calculator (calculation of the address of 
+ a point, orientation angle of a segment under a point, ...). The address calculation functions 
+ use Etalab's Adresse API (works only in France).
+
+ <b>Nouvelles fonctions de calculs automatiques utilisables dans le calculateur d'expressions QGIS</b>
+ Ajoute des fonctions supplémentaires au calculateur d'expressions QGIS (calcul de l'adresse d'un point, angle d'orientation d'un segment sous un point, ...). Les fonctions de calcul d'adresse utilisent l'API Adresse d'Etalab (fonctionne uniquement en France).
+version=3.0.1
+author=SIGMOÉ - Etienne MORO
+email=em@sigmoe.fr
+tags=expressions, adresse, calcul adresse, symbole orienté sur segment, address, line orientation, field calculator
+homepage=https://sigmoe.fr/extension-qgis-calcul-automatique-dadresses-postales/
+tracker=https://github.com/sigmoe/ExpressionFunctions/issues
+repository=https://github.com/sigmoe/ExpressionFunctions
+icon=icons/sgm_expfnc_i.png
+experimental=False
+
