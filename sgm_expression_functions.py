@@ -256,7 +256,7 @@ class ExpFncDlg(QWidget, gui_dlg_expfnc):
         super(ExpFncDlg, self).__init__(parent)
         self.setupUi(self)
         # Delete Widget on close event
-        self.setAttribute(Qt.WA_DeleteOnClose)
+        # self.setAttribute(Qt.WA_DeleteOnClose)
 
 
 class sgmExpFunctions:
