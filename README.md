@@ -20,7 +20,7 @@ See the video (in French): https://youtu.be/drrnjESjwUM
 List of functions available in the expression builder:
 * **get_address** : Provides the address of a point using French Etalab API Adresse (open license, usable in France only).
 * **x_fromaddress** : Returns the abscissa (X) of the point locating the address specified
-* **y_fromaddress**: Returns the ordinate (Y) of the point locating the address specified
+* **y_fromaddress** : Returns the ordinate (Y) of the point locating the address specified
 * **get_lineangle** :  Find the angle of a segment (from a target layer) located under the point of the source layer.
 
 Author
