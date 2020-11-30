@@ -12,6 +12,12 @@ about=Adds additional functions to the QGIS expression calculator (calculation o
 version=3.0.2
 author=SIGMOÉ - Etienne MORO
 email=em@sigmoe.fr
+changelog=
+ <i>Version 3.0.2 - 30/11/2020</i>
+ * Ajout d'un paramètre 'distance' sur la fonction <b>get_address</b>. Ce paramètre permet d'indiquer une distance limite pour retenir ou pas l'adresse (adresse non retenue si le point adresse retrouvé est trop éloigné du point du canevas)
+ * Correction de 2 bogues sur la fonction <b>get_address</b>
+ <i>Version 3.0.1 - 03/11/2020</i>
+ * Première version
 tags=expressions, adresse, calcul adresse, symbole orienté sur segment, address, line orientation, field calculator
 homepage=https://sigmoe.fr/extension-qgis-calcul-automatique-dadresses-postales/
 tracker=https://github.com/sigmoe/ExpressionFunctions/issues
