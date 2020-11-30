@@ -7,7 +7,7 @@
     * Description:   Add custom user functions to QGIS Field calculator. 
     * Specific lib:  None
     * First release: 2018-08-10
-    * Last release:  2020-11-03
+    * Last release:  2020-11-30
     * Copyright:     (C)2020 SIGMOE
     * Email:         em at sigmoe.fr
     * License:       GPL v3
@@ -38,7 +38,7 @@ from qgis.PyQt.QtWidgets import QAction, QWidget
 from qgis.utils import iface, qgsfunction
 from qgis.core import ( QgsNetworkContentFetcher, QgsProject, QgsMapLayer, QgsFeatureRequest,
                         QgsWkbTypes, QgsCoordinateTransform, QgsCoordinateReferenceSystem,
-                        QgsRectangle, QgsExpression)
+                        QgsRectangle, QgsExpression, QgsPoint)
 
 
 import os.path
@@ -90,7 +90,7 @@ def add_doc(value):
     return _doc       
 
 
-@qgsfunction(1, "Fonctions SIGMOÉ", register=False, usesgeometry=True)
+@qgsfunction(args=-1, group="Fonctions SIGMOÉ", register=False, usesgeometry=True, handlesnull=True)
 @add_doc(get_address_doc)
 def get_address(values, feature, parent):
     dbg=debug()
@@ -105,47 +105,74 @@ def get_address(values, feature, parent):
         ft_pt = feature.geometry().asPoint()
     count = 0
     dminRes = ""
-    # List of options for formatting the address
     ad_fmt = {
-                'full' : "label",
-                'num' : "housenumber",
-                'rue' : "street",
-                'cop' : "postcode",
-                'vil' : "city",
-                'ins' : "citycode",
-                'nnr' : "name",
-                'FULL' : "label",
-                'RUE' : "street",
-                'VIL' : "city",
-                'NNR' : "name"
+                'full' : ['{1}', "label"],
+                'num' : ['{2}', "housenumber"],
+                'rue' : ['{3}', "street"],
+                'cop' : ['{4}', "postcode"],
+                'vil' : ['{5}', "city"],
+                'ins' : ['{6}', "citycode"],
+                'nnr' : ['{7}', "name"],
+                'FULL' : ['{8}', "label"],
+                'RUE' : ['{9}', "street"],
+                'VIL' : ['{10}', "city"],
+                'NNR' : ['{11}', "name"]
                 }
+    # Transformation to use to retrieve the coordinates of the point for the API
     trf = QgsCoordinateTransform(iface.mapCanvas().mapSettings().destinationCrs(), 
                                         QgsCoordinateReferenceSystem(4326), QgsProject().instance())
+    # Transformation to use to compare the coordinates of the result with the point coordinates
+    trf_res = QgsCoordinateTransform(iface.mapCanvas().mapSettings().destinationCrs(), 
+                                        QgsCoordinateReferenceSystem(2154), QgsProject().instance())
     ad_pt = trf.transform(ft_pt)
-    # Use the Etalab API Adresse
     url = "http://api-adresse.data.gouv.fr/reverse/?lon="+str(ad_pt.x())+"&lat="+str(ad_pt.y())
     result = request(url)
     fmt = values[0]
+    # To avoid keywords problems, create a new keyword string to use
+    nw_fmt = ''
+    for ad_key in ad_fmt:
+        if ad_key in fmt:
+            nw_key = fmt.replace(ad_key, ad_fmt[ad_key][0])
+            fmt = nw_key
+    # Create the address
     try:
         data = json.loads(result)     
         # return str(data)
-        if len(data["features"]) > 0:
-            for ad_val in ad_fmt:
-                if ad_val in fmt:
-                    try:
-                        repl_str = data["features"][0]["properties"][ad_fmt[ad_val]]
-                    except:
-                        repl_str = ""
-                    if ad_val.isupper():
-                        repl_str = repl_str.upper()
-                    ret_ad = fmt.replace(ad_val, repl_str)
-                    fmt = ret_ad
-            return fmt
-            
+        # Check if the parameter distance exists
+        if len(values)==2:
+            d_limit =  float(values[1])
+        else:
+            d_limit =  1000.00   
+        if len(data) > 0:
+            if len(data["features"]) > 0:
+                for ad_val in ad_fmt:
+                    if ad_fmt[ad_val][0] in fmt:
+                        try:
+                            repl_str = data["features"][0]["properties"][ad_fmt[ad_val][1]]
+                        except:
+                            repl_str = ""
+                        if ad_val.isupper():
+                            repl_str = repl_str.upper()
+                        ret_ad = fmt.replace(ad_fmt[ad_val][0], repl_str)
+                        fmt = ret_ad
+                # Calculate the distance betweew the original point in the canvas and the point
+                # of the address
+                ad_realpt = QgsPoint( data["features"][0]["properties"]["x"],
+                                        data["features"][0]["properties"]["y"])
+                ad_oript = trf_res.transform(ft_pt)
+                d = dist(ad_realpt,ad_oript)
+                # Return the address only if the distance calculated is under 
+                # the limit distance (2nd param)
+                if d <= d_limit:
+                    return fmt
+                else:
+                    return None
+            else:
+                return None
         else:
             return None
     except ValueError:
-        parent.setEvalErrorString("error: check your network settings (proxy)")
+        parent.setEvalErrorString("error: network problem (check your network settings: proxy) or coordinates problems")
         
 
 @qgsfunction(args=-1, group="Fonctions SIGMOÉ", register=False, usesgeometry=True, handlesnull=True)

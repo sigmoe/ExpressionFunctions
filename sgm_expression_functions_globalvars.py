@@ -8,7 +8,7 @@
     * Description:   Add custom user functions to QGIS Field calculator. 
     * Specific lib:  None
     * First release: 2018-08-10
-    * Last release:  2020-11-03
+    * Last release:  2020-11-30
     * Copyright:     (C)2020 SIGMOE
     * Email:         em at sigmoe.fr
     * License:       GPL v3
@@ -39,11 +39,12 @@ get_address_doc = """
         Fournit l'adresse d'un point en utilisant l'API Adresse d'Etalab (licence ouverte, utilisable en France uniquement).<br/>
         Cette fonction peut être utilisée sur une couche ponctuelle ou surfacique (dans ce cas, c'est l'adresse du centroïde du polygone qui est calculée).<br/>
         Le paramètre <span class="argument">format</span> permet de formater les différents éléments de l'adresse.<br/>
+        Le paramètre optionnel <span class="argument">distance</span> permet d'indiquer une distance limite pour retenir ou pas l'adresse (adresse non retenue si le point adresse retrouvé est trop éloigné du point du canevas).<br/>
         Cette fonction nécessite un accès Internet.
         <h4>Syntaxe</h4>
         <div class="syntax"><code>
         <span class="functionname">get_address(</span>
-        <span class="argument">format</span>
+        <span class="argument">format [, distance]</span>
         <span class="functionname">)</span>
         </code></div>
         <h4>Arguments</h4>
@@ -64,12 +65,14 @@ get_address_doc = """
         <br/>'RUE' : retourne le nom de la rue en lettres majuscules
         <br/>'VIL' : retourne le nom de la commune en lettres majuscules
         <br/>'NNR' : retourne le numéro de voirie suivi du nom de la rue en lettres majuscules
+        <tr><td class="argument">distance</td><td>distance limite (en mètres) de prise en compte de l'adresse. Si cet argument est présent, l'adresse ne sera conservée que si la distance entre le point original (dans le canevas) et le point adresse est inférieure à cette distance limite. Sinon, aucune adresse n'est retournée.</td></tr>
         </table>
         </code></div>
         <h4>Exemples</h4>
         <!-- Show examples of function.-->
         <div class="examples"><ul>
         <li><code>get_address('full')</code> &rarr; <code>8 rue Dupont 67170 Brumath</code></li>
+        <li><code>get_address('full', 20)</code> &rarr; <code>8 rue Dupont 67170 Brumath (adresse retournée uniquement si la distance entre le point original et le point adresse est inférieure à 20 mètres)</code></li>
         <li><code>get_address('num rue - cop VIL')</code> &rarr; <code>8 Rue Dupont - 67170 BRUMATH</code></li>
         <li><code>get_address('NNR')</code> &rarr; <code>8 RUE DUPONT</code></li>
         </ul></div>
