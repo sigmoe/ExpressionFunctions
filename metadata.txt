@@ -9,7 +9,7 @@ about=Adds additional functions to the QGIS expression calculator (calculation o
 
  <b>Nouvelles fonctions de calculs automatiques utilisables dans le calculateur d'expressions QGIS</b>
  Ajoute des fonctions supplémentaires au calculateur d'expressions QGIS (calcul de l'adresse d'un point, angle d'orientation d'un segment sous un point, ...). Les fonctions de calcul d'adresse utilisent l'API Adresse d'Etalab (fonctionne uniquement en France).
-version=3.0.1
+version=3.0.2
 author=SIGMOÉ - Etienne MORO
 email=em@sigmoe.fr
 tags=expressions, adresse, calcul adresse, symbole orienté sur segment, address, line orientation, field calculator
