@@ -8,8 +8,8 @@
     * Description:   Add custom user functions to QGIS Field calculator. 
     * Specific lib:  None
     * First release: 2018-08-10
-    * Last release:  2020-11-30
-    * Copyright:     (C)2020 SIGMOE
+    * Last release:  2021-08-26
+    * Copyright:     (C)2021 SIGMOE
     * Email:         em at sigmoe.fr
     * License:       GPL v3
     ***************************************************************************
@@ -61,6 +61,8 @@ get_address_doc = """
         <br/>vil : returns the city name
         <br/>ins : returns the INSEE code
         <br/>nnr : returns the house number followed by the streetname
+        <br/>'id' : returns the address identifier (interoperability key)
+        <br/>'riv' : returns the RIVOLI code of the address
         <br/>FULL : returns the full address in capital letters
         <br/>RUE : returns the street name in capital letters
         <br/>VIL : returns the city name in capital letters

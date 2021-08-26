@@ -7,8 +7,8 @@
     * Description:   Add custom user functions to QGIS Field calculator. 
     * Specific lib:  None
     * First release: 2018-08-10
-    * Last release:  2020-11-30
-    * Copyright:     (C)2020 SIGMOE
+    * Last release:  2021-08-26
+    * Copyright:     (C)2021 SIGMOE
     * Email:         em at sigmoe.fr
     * License:       GPL v3
     ***************************************************************************
@@ -116,7 +116,9 @@ def get_address(values, feature, parent):
                 'FULL' : ['{8}', "label"],
                 'RUE' : ['{9}', "street"],
                 'VIL' : ['{10}', "city"],
-                'NNR' : ['{11}', "name"]
+                'NNR' : ['{11}', "name"],
+                'id' : ['{12}', "id"],
+                'riv' : ['{13}', "id[6:10]"]
                 }
     # Transformation to use to retrieve the coordinates of the point for the API
     trf = QgsCoordinateTransform(iface.mapCanvas().mapSettings().destinationCrs(), 
@@ -148,7 +150,13 @@ def get_address(values, feature, parent):
                 for ad_val in ad_fmt:
                     if ad_fmt[ad_val][0] in fmt:
                         try:
-                            repl_str = data["features"][0]["properties"][ad_fmt[ad_val][1]]
+                            if "[" in ad_fmt[ad_val][1]:
+                                pos_param = ad_fmt[ad_val][1].find("[")
+                                att = ad_fmt[ad_val][1][:pos_param]
+                                id1, id2 = ad_fmt[ad_val][1][pos_param+1:-1].split(":")
+                                repl_str = data["features"][0]["properties"][att][int(id1):int(id2)]
+                            else:
+                                repl_str = data["features"][0]["properties"][ad_fmt[ad_val][1]]
                         except:
                             repl_str = ""
                         if ad_val.isupper():
