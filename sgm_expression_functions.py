@@ -7,8 +7,8 @@
     * Description:   Add custom user functions to QGIS Field calculator. 
     * Specific lib:  None
     * First release: 2018-08-10
-    * Last release:  2021-08-26
-    * Copyright:     (C)2021 SIGMOE
+    * Last release:  2022-02-23
+    * Copyright:     (C)2022 SIGMOE
     * Email:         em at sigmoe.fr
     * License:       GPL v3
     ***************************************************************************
@@ -38,8 +38,9 @@ from qgis.PyQt.QtWidgets import QAction, QWidget
 from qgis.utils import iface, qgsfunction
 from qgis.core import ( QgsNetworkContentFetcher, QgsProject, QgsMapLayer, QgsFeatureRequest,
                         QgsWkbTypes, QgsCoordinateTransform, QgsCoordinateReferenceSystem,
-                        QgsRectangle, QgsExpression, QgsPoint)
-
+                        QgsRectangle, QgsExpression, QgsExpressionContextUtils, QgsExpressionContext,
+                        QgsPoint, QgsPointXY, QgsFeature)
+from qgis.gui import QgsAttributeEditorContext
 
 import os.path
 import sys
@@ -87,12 +88,13 @@ def add_doc(value):
     def _doc(func):
         func.__doc__ = value
         return func
-    return _doc       
+    return _doc
 
-
-@qgsfunction(args=-1, group="Fonctions SIGMOÉ", register=False, usesgeometry=True, handlesnull=True)
+@qgsfunction(args="auto", group="Fonctions SIGMOÉ", register=False, usesgeometry=True, handlesnull=True)
 @add_doc(get_address_doc)
-def get_address(values, feature, parent):
+def get_address(fmt, dst, feature, parent, context):
+    cln = context.variable("layer_name")
+    ctx_lyr = QgsProject().instance().mapLayersByName(cln)[0]
     dbg=debug()
     dbg.out("evaluating get_address")
     if feature.geometry().type() != QgsWkbTypes.PointGeometry:
@@ -121,15 +123,14 @@ def get_address(values, feature, parent):
                 'riv' : ['{13}', "id[6:10]"]
                 }
     # Transformation to use to retrieve the coordinates of the point for the API
-    trf = QgsCoordinateTransform(iface.mapCanvas().mapSettings().destinationCrs(), 
-                                        QgsCoordinateReferenceSystem(4326), QgsProject().instance())
-    # Transformation to use to compare the coordinates of the result with the point coordinates
-    trf_res = QgsCoordinateTransform(iface.mapCanvas().mapSettings().destinationCrs(), 
-                                        QgsCoordinateReferenceSystem(2154), QgsProject().instance())
+    crs_lyr = ctx_lyr.crs()
+    trf = QgsCoordinateTransform(crs_lyr, QgsCoordinateReferenceSystem(4326), QgsProject().instance())
+    # Reverse transformation to use to compare the coordinates of the result with the point coordinates
+    # Uses the project CRS to compare
+    trf_rev = QgsCoordinateTransform(QgsCoordinateReferenceSystem(4326), crs_lyr, QgsProject().instance())
     ad_pt = trf.transform(ft_pt)
     url = "http://api-adresse.data.gouv.fr/reverse/?lon="+str(ad_pt.x())+"&lat="+str(ad_pt.y())
     result = request(url)
-    fmt = values[0]
     # To avoid keywords problems, create a new keyword string to use
     nw_fmt = ''
     for ad_key in ad_fmt:
@@ -138,13 +139,13 @@ def get_address(values, feature, parent):
             fmt = nw_key
     # Create the address
     try:
-        data = json.loads(result)     
+        data = json.loads(result)
         # return str(data)
-        # Check if the parameter distance exists
-        if len(values)==2:
-            d_limit =  float(values[1])
-        else:
-            d_limit =  1000.00   
+        # Check if the parameter distance is valid
+        d_limit = 1000.00
+        if type(dst) == float or type(dst) == int:
+            if dst != -1:
+                d_limit = float(dst)
         if len(data) > 0:
             if len(data["features"]) > 0:
                 for ad_val in ad_fmt:
@@ -163,12 +164,12 @@ def get_address(values, feature, parent):
                             repl_str = repl_str.upper()
                         ret_ad = fmt.replace(ad_fmt[ad_val][0], repl_str)
                         fmt = ret_ad
-                # Calculate the distance betweew the original point in the canvas and the point
+                # Calculate the distance between the original point in the canvas and the point
                 # of the address
-                ad_realpt = QgsPoint( data["features"][0]["properties"]["x"],
-                                        data["features"][0]["properties"]["y"])
-                ad_oript = trf_res.transform(ft_pt)
-                d = dist(ad_realpt,ad_oript)
+                ad_realpt_w = QgsPointXY( data["features"][0]["geometry"]["coordinates"][0],
+                                        data["features"][0]["geometry"]["coordinates"][1])
+                ad_realpt = trf_rev.transform(ad_realpt_w)
+                d = dist(ad_realpt,ft_pt)
                 # Return the address only if the distance calculated is under 
                 # the limit distance (2nd param)
                 if d <= d_limit:

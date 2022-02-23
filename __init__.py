@@ -7,8 +7,8 @@
     * Description:   Add custom user functions to QGIS Field calculator. 
     * Specific lib:  None
     * First release: 2018-08-10
-    * Last release:  2020-11-03
-    * Copyright:     (C)2020 SIGMOE
+    * Last release:  2022-02-23
+    * Copyright:     (C)2022 SIGMOE
     * Email:         em at sigmoe.fr
     * License:       GPL v3
     ***************************************************************************

@@ -1,6 +1,6 @@
 [general]
 name=Fonctions SIGMOÉ
-qgisMinimumVersion=3.10
+qgisMinimumVersion=3.16
 qgisMaximumVersion=3.99
 description=New functions usable for automatic calculation in the expression builder
 about=Adds additional functions to the QGIS expression calculator (calculation of the address of 
@@ -9,10 +9,14 @@ about=Adds additional functions to the QGIS expression calculator (calculation o
 
  <b>Nouvelles fonctions de calculs automatiques utilisables dans le calculateur d'expressions QGIS</b>
  Ajoute des fonctions supplémentaires au calculateur d'expressions QGIS (calcul de l'adresse d'un point, angle d'orientation d'un segment sous un point, ...). Les fonctions de calcul d'adresse utilisent l'API Adresse d'Etalab (fonctionne uniquement en France).
-version=3.0.3
+version=3.0.4
 author=SIGMOÉ - Etienne MORO
 email=em@sigmoe.fr
 changelog=
+ <i>Version 3.0.4 - 23/02/2022</i>
+ * Modification de la fonction <b>get_address</b> pour tenir compte de tous les systèmes de coordonnées légaux français, y compris ceux des DROM.
+  <b>ATTENTION</b> : désormais le second argument <b>distance_limite</b> est obligatoire.
+  
  <i>Version 3.0.3 - 26/08/2021</i>
  * Ajout de 2 codes supplémentaires dans le paramètre <b>format</b>:
   - <b>id</b> : retourne l'identifiant de l’adresse (clef d’interopérabilité)
