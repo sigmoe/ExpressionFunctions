@@ -11,7 +11,7 @@ French description
 
 Prerequisite
 ============
-* QGIS 3.10 LTR
+* QGIS 3.16 LTR
 
 Documentation
 =============
