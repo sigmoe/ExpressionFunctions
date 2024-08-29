@@ -1,5 +1,10 @@
 # CHANGELOG
 
+### 3.0.5 - 29/08/2024
+*Ajout de 2 nouvelles fonctions :
+- **geomtouches_startpoint** : retourne la valeur d'un champ de l'objet de la couche cible (ponctuelle) qui touche le premier point de l'objet source (linéaire).
+- **geomtouches_endpoint** : retourne la valeur d'un champ de l'objet de la couche cible (ponctuelle) qui touche le dernier point de l'objet source (linéaire).
+
 ### 3.0.4 - 23/02/2022
 
 * Modification de la fonction **get_address** pour tenir compte de tous les systèmes de coordonnées légaux français, y compris ceux des DROM.
