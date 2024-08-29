@@ -8,8 +8,8 @@
     * Description:   Add custom user functions to QGIS Field calculator. 
     * Specific lib:  None
     * First release: 2018-08-10
-    * Last release:  2022-02-23
-    * Copyright:     (C)2022 SIGMOE
+    * Last release:  2024-08-29
+    * Copyright:     (C)2024 SIGMOE
     * Email:         em at sigmoe.fr
     * License:       GPL v3
     ***************************************************************************
@@ -135,7 +135,7 @@ get_lineangle_doc = """
         Calcule l'angle du segment (provenant de la couche cible target_layer) situé sous l'objet source, avec une tolérance permettant de trouver le bon segment correspondant au point.
         <h4>Syntaxe</h4>
         <div class="syntax"><code>
-        <span class="functionname">get_angle(</span>
+        <span class="functionname">get_lineangle(</span>
         <span class="argument">target_layer, tolerance</span>
         <span class="functionname">)</span>
         </code></div>
@@ -143,11 +143,75 @@ get_lineangle_doc = """
         <div class="arguments">
         <table>
         <tr><td class="argument">target_layer</td><td>nom de la couche cible utilisée pour trouver le segment sous le point. Par exemple 'canas'.</td></tr>
-        <tr><td class="argument">tolerance</td><td>tolerance (distance autour du point) utilisée pour toruver le bon segment dans la couche cible.</td></tr>
+        <tr><td class="argument">tolerance</td><td>tolerance (distance autour du point) utilisée pour trouver le bon segment dans la couche cible.</td></tr>
+        </table>
+        <i>ATTENTION: Les 2 couches traitées (source et cible) doivent avoir le même SCR assigné.</i>
         </div>
         <h4>Exemples</h4>
         <!-- Show examples of function.-->
         <div class="examples"><ul>
         <li><code>get_lineangle('canas', 0.01)</code></li>
+        </ul></div>
+    """
+geomtouches_startpoint_doc =  """
+        Retourne la valeur du champ target_field de l'objet de la couche cible (target_layer) qui touche le premier point de l'objet source.
+        Si plus d'un objet est trouvé, retourne une valeur unique composée de la concaténation de chaque valeur séparées par | (liste de valeurs).
+        La couche cible (target_layer) doit impérativement être de géométrie ponctuelle, et la couche source de géométrie linéaire.
+        <h4>Syntaxe</h4>
+        <div class="syntax"><code>
+        <span class="functionname">geomtouches_startpoint(</span>
+        <span class="argument">target_layer, target_field</span>
+        <span class="functionname">)</span>
+        </code></div>
+        <h4>Arguments</h4>
+        <div class="arguments">
+        <table>
+        <tr><td class="argument">target_layer</td><td>nom de la couche cible à traiter, par exemple  'Regards'.</td></tr>
+        <tr><td class="argument">target_field</td><td>nom du champ de la couche target_layer duquel vous souhaitez récupérer la valeur, par exemple 'numero'.
+        <br/>Si target_field contient le nom de plusieurs champs séparés par +, le résulat est la concaténation de la valeur de chaque champ (valeurs séparées par un espace).
+        <br/>Si target_field est égal à '$geometry', retoune la géométrie WKT de l'objet trouvé dans la couche cible.
+        <br/>Si target_field est égal à '$id' , retoune la numéro de l'objet (id) trouvé dans la couche cible.</td></tr>
+        </table>
+        <i>Le nombre d'objets traités est limité à 100000 pour éviter un traitement trop long.</i>
+        <br/><i>ATTENTION: Les 2 couches traitées (source et cible) doivent avoir le même SCR assigné.</i>
+        </div>
+        <h4>Exemples</h4>
+        <!-- Show examples of function.-->
+        <div class="examples"><ul>
+        <li><code>geomtouches_startpoint('Regards','cote tampon')</code></li>
+        <li><code>geomtouches_startpoint('Regards','identifiant+cote tampon')</code></li>
+        <li><code>geomtouches_startpoint('Regards','$geometry')</code></li>
+        <li><code>geomtouches_startpoint('Regards','$id')</code></li>
+        </ul></div>
+    """
+geomtouches_endpoint_doc = """
+        Retourne la valeur du champ target_field de l'objet de la couche cible (target_layer) qui touche le dernier point de l'objet source.
+        Si plus d'un objet est trouvé, retourne une valeur unique composée de la concaténation de chaque valeur séparées par | (liste de valeurs).
+        La couche cible (target_layer) doit impérativement être de géométrie ponctuelle, et la couche source de géométrie linéaire.
+        <h4>Syntaxe</h4>
+        <div class="syntax"><code>
+        <span class="functionname">geomtouches_endpoint(</span>
+        <span class="argument">target_layer, target_field</span>
+        <span class="functionname">)</span>
+        </code></div>
+        <h4>Arguments</h4>
+        <div class="arguments">
+        <table>
+        <tr><td class="argument">target_layer</td><td>nom de la couche cible à traiter, par exemple  'Regards'.</td></tr>
+        <tr><td class="argument">target_field</td><td>nom du champ de la couche target_layer duquel vous souhaitez récupérer la valeur, par exemple 'numero'.
+        <br/>Si target_field contient le nom de plusieurs champs séparés par +, le résulat est la concaténation de la valeur de chaque champ (valeurs séparées par un espace).
+        <br/>Si target_field est égal à '$geometry', retoune la géométrie WKT de l'objet trouvé dans la couche cible.
+        <br/>Si target_field est égal à '$id' , retoune la numéro de l'objet (id) trouvé dans la couche cible.</td></tr>
+        </table>
+        <i>Le nombre d'objets traités est limité à 100000 pour éviter un traitement trop long.</i>
+        <br/><i>ATTENTION: Les 2 couches traitées (source et cible) doivent avoir le même SCR assigné.</i>
+        </div>
+        <h4>Exemples</h4>
+        <!-- Show examples of function.-->
+        <div class="examples"><ul>
+        <li><code>geomtouches_endpoint('Regards','cote tampon')</code></li>
+        <li><code>geomtouches_endpoint('Regards','identifiant+cote tampon')</code></li>
+        <li><code>geomtouches_endpoint('Regards','$geometry')</code></li>
+        <li><code>geomtouches_endpoint('Regards','$id')</code></li>
         </ul></div>
     """

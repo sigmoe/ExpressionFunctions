@@ -7,8 +7,8 @@
     * Description:   Add custom user functions to QGIS Field calculator. 
     * Specific lib:  None
     * First release: 2018-08-10
-    * Last release:  2022-02-23
-    * Copyright:     (C)2022 SIGMOE
+    * Last release:  2024-08-29
+    * Copyright:     (C)2024 SIGMOE
     * Email:         em at sigmoe.fr
     * License:       GPL v3
     ***************************************************************************
@@ -56,8 +56,10 @@ else:
 gui_dlg_expfnc, _ = uic.loadUiType(
         os.path.join(os.path.dirname(__file__), r"gui/sgm_expressionfunctions_dlg.ui"))
 
+
 def _getLayerSet():
     return {layer.name():layer for layer in QgsProject.instance().mapLayers().values()}
+
 
 # Check if 2 points are identical
 # digit = number of digit taken into account for the comparison
@@ -67,11 +69,13 @@ def check_identical_pts(qgs_pt1, qgs_pt2, digit):
         round(qgs_pt1.y(), digit) == round(qgs_pt2.y(), digit):
         ret = True
     return ret
-    
+
+
 # Calculate the distance between 2 points
 def dist(pt1, pt2):
     return math.sqrt( (pt2.x() - pt1.x())**2 + (pt2.y() - pt1.y())**2 )
-    
+
+
 # Used for get_address function
 def request(url):
     ''' prepare the request and return the result of the reply
@@ -83,12 +87,14 @@ def request(url):
     evloop.exec_(QEventLoop.ExcludeUserInputEvents)
     return fetcher.contentAsString()
 
+
 # Used to add docstring from a variable
 def add_doc(value):
     def _doc(func):
         func.__doc__ = value
         return func
     return _doc
+
 
 @qgsfunction(args="auto", group="Fonctions SIGMOÉ", register=False, usesgeometry=True, handlesnull=True)
 @add_doc(get_address_doc)
@@ -98,8 +104,12 @@ def get_address(fmt, dst, feature, parent, context):
     dbg=debug()
     dbg.out("evaluating get_address")
     if feature.geometry().type() != QgsWkbTypes.PointGeometry:
-        if feature.geometry().type() == QgsWkbTypes.PolygonGeometry :
+        if feature.geometry().type() == QgsWkbTypes.PolygonGeometry:
             ft_pt = feature.geometry().pointOnSurface().asPoint()
+        elif feature.geometry().type() == QgsWkbTypes.LineGeometry:
+            geom = feature.geometry()
+            length = geom.length()
+            ft_pt = geom.interpolate(length/2.0).asPoint()
         else:
             parent.setEvalErrorString("error: targetLayer is not a point or a polygon layer")
             return
@@ -182,7 +192,7 @@ def get_address(fmt, dst, feature, parent, context):
             return None
     except ValueError:
         parent.setEvalErrorString("error: network problem (check your network settings: proxy) or coordinates problems")
-        
+
 
 @qgsfunction(args=-1, group="Fonctions SIGMOÉ", register=False, usesgeometry=True, handlesnull=True)
 @add_doc(x_fromaddress_doc)
@@ -236,7 +246,7 @@ def y_fromaddress(values, feature, parent):
             return None
     except ValueError:
         parent.setEvalErrorString("error: check your network settings (proxy)")
-        
+
 
 @qgsfunction(2, "Fonctions SIGMOÉ", register=False, usesgeometry=True)
 @add_doc(get_lineangle_doc)
@@ -272,7 +282,135 @@ def get_lineangle(values, feature, parent):
             ang = math.atan2(pt2.x() - pt1.x(), pt2.y() - pt1.y()) / math.pi * 180
             ret = ang
         return ret
-        
+
+
+@qgsfunction(2, "Fonctions SIGMOÉ", register=False, usesgeometry=True)
+@add_doc(geomtouches_startpoint_doc)
+def geomtouches_startpoint(values, feature, parent):
+    dbg=debug()
+    dbg.out("evaluating geomtouches_startpoint")
+    targetLayerName = values[0]
+    targetFieldName = values[1]
+    layerSet = _getLayerSet()
+    if not (targetLayerName in layerSet.keys()):
+        parent.setEvalErrorString("error: targetLayer not present")
+        return
+    if layerSet[targetLayerName].type() != QgsMapLayer.VectorLayer:
+        parent.setEvalErrorString("error: targetLayer is not a vector layer")
+        return
+    if layerSet[targetLayerName].geometryType() != QgsWkbTypes.PointGeometry:
+        parent.setEvalErrorString("error: targetLayer is not a point layer")
+        return
+    if feature.geometry().type() != QgsWkbTypes.LineGeometry:
+        parent.setEvalErrorString("error: targetLayer is not a line layer")
+        return
+    count = 0
+    dminRes = ""
+    dminResLst = []
+    for feat in layerSet[targetLayerName].getFeatures():
+        count += 1
+        if count < 100000:
+            if check_identical_pts(feature.geometry().vertexAt(0), feat.geometry().asPoint(), 4):
+                if targetFieldName=="$geometry":
+                    dminRes = feat.geometry().asWkt()
+                elif targetFieldName=="$id":
+                    dminRes = feat.id()
+                else:
+                    try:
+                        # Case of concatenation of several attribute values
+                        if "+" in targetFieldName:
+                            fld_names = targetFieldName.split("+")
+                            nw_val = ""
+                            for fld_name in fld_names:
+                                if feat.attribute(fld_name):
+                                    nw_val += str(feat.attribute(fld_name)) + " "
+                            nw_val = nw_val[:-1]
+                        else:
+                            nw_val = feat.attribute(targetFieldName)
+                        if nw_val not in dminResLst:
+                            if dminRes != "":
+                                dminRes = str(dminRes) + " | " + str(nw_val)
+                            else:
+                                dminRes = nw_val
+                            dminResLst.append(nw_val)
+                    except:
+                        parent.setEvalErrorString("error: targetFieldName not present")
+                        return None
+        else:
+            parent.setEvalErrorString("error: too many features to compare")
+    if count > 0:
+        try:
+            return dminRes
+        except:
+            return None
+    else:
+        parent.setEvalErrorString("error: no features to compare")
+
+
+@qgsfunction(2, "Fonctions SIGMOÉ", register=False, usesgeometry=True)
+@add_doc(geomtouches_endpoint_doc)
+def geomtouches_endpoint(values, feature, parent):
+    dbg=debug()
+    dbg.out("evaluating geomtouches_endpoint")
+    targetLayerName = values[0]
+    targetFieldName = values[1]
+    #layerSet = {layer.name():layer for layer in iface.legendInterface().layers()}
+    layerSet = _getLayerSet()
+    if not (targetLayerName in layerSet.keys()):
+        parent.setEvalErrorString("error: targetLayer not present")
+        return
+    if layerSet[targetLayerName].type() != QgsMapLayer.VectorLayer:
+        parent.setEvalErrorString("error: targetLayer is not a vector layer")
+        return
+    if layerSet[targetLayerName].geometryType() != QgsWkbTypes.PointGeometry:
+        parent.setEvalErrorString("error: targetLayer is not a point layer")
+        return
+    if feature.geometry().type() != QgsWkbTypes.LineGeometry:
+        parent.setEvalErrorString("error: targetLayer is not a line layer")
+        return
+    count = 0
+    dminRes = ""
+    dminResLst = []
+    nb_vtx = feature.geometry().constGet().vertexCount()
+    for feat in layerSet[targetLayerName].getFeatures():
+        count += 1
+        if count < 100000:
+            if check_identical_pts(feature.geometry().vertexAt(nb_vtx-1), feat.geometry().asPoint(), 4):
+                if targetFieldName=="$geometry":
+                    dminRes = feat.geometry().asWkt()
+                elif targetFieldName=="$id":
+                    dminRes = feat.id()
+                else:
+                    try:
+                        # Case of concatenation of several attribute values
+                        if "+" in targetFieldName:
+                            fld_names = targetFieldName.split("+")
+                            nw_val = ""
+                            for fld_name in fld_names:
+                                if feat.attribute(fld_name):
+                                    nw_val += str(feat.attribute(fld_name)) + " "
+                            nw_val = nw_val[:-1]
+                        else:
+                            nw_val = feat.attribute(targetFieldName)
+                        if nw_val not in dminResLst:
+                            if dminRes != "":
+                                dminRes = str(dminRes) + " | " + str(nw_val)
+                            else:
+                                dminRes = nw_val
+                            dminResLst.append(nw_val)
+                    except:
+                        parent.setEvalErrorString("error: targetFieldName not present")
+                        return None
+        else:
+            parent.setEvalErrorString("error: too many features to compare")
+    if count > 0:
+        try:
+            return dminRes
+        except:
+            return None
+    else:
+        parent.setEvalErrorString("error: no features to compare")
+
 
 class debug:
 
@@ -311,6 +449,8 @@ class sgmExpFunctions:
         QgsExpression.registerFunction(get_lineangle)
         QgsExpression.registerFunction(x_fromaddress)
         QgsExpression.registerFunction(y_fromaddress)
+        QgsExpression.registerFunction(geomtouches_startpoint)
+        QgsExpression.registerFunction(geomtouches_endpoint)
                
         # Add Sigmoe toolbar
         self.toolbar = self.iface.addToolBar(mnu_title_txt)
@@ -330,6 +470,8 @@ class sgmExpFunctions:
         QgsExpression.unregisterFunction('get_lineangle')
         QgsExpression.unregisterFunction('x_fromaddress')
         QgsExpression.unregisterFunction('y_fromaddress')
+        QgsExpression.unregisterFunction('geomtouches_startpoint')
+        QgsExpression.unregisterFunction('geomtouches_endpoint')
         
         self.iface.mainWindow().removeToolBar(self.toolbar)
 

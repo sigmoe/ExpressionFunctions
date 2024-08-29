@@ -9,10 +9,15 @@ about=Adds additional functions to the QGIS expression calculator (calculation o
 
  <b>Nouvelles fonctions de calculs automatiques utilisables dans le calculateur d'expressions QGIS</b>
  Ajoute des fonctions supplémentaires au calculateur d'expressions QGIS (calcul de l'adresse d'un point, angle d'orientation d'un segment sous un point, ...). Les fonctions de calcul d'adresse utilisent l'API Adresse d'Etalab (fonctionne uniquement en France).
-version=3.0.4
+version=3.0.5
 author=SIGMOÉ - Etienne MORO
 email=em@sigmoe.fr
 changelog=
+ <i>Version 3.0.5 - 29/08/2024</i>
+ *Ajout de 2 nouvelles fonctions :
+  - <b>geomtouches_startpoint</b> : retourne la valeur d'un champ de l'objet de la couche cible (ponctuelle) qui touche le premier point de l'objet source (linéaire).
+  - <b>geomtouches_endpoint</b> : retourne la valeur d'un champ de l'objet de la couche cible (ponctuelle) qui touche le dernier point de l'objet source (linéaire).
+  
  <i>Version 3.0.4 - 23/02/2022</i>
  * Modification de la fonction <b>get_address</b> pour tenir compte de tous les systèmes de coordonnées légaux français, y compris ceux des DROM.
   <b>ATTENTION</b> : désormais le second argument <b>distance_limite</b> est obligatoire.
@@ -25,7 +30,7 @@ changelog=
  <i>Version 3.0.2 - 30/11/2020</i>
  * Ajout d'un paramètre 'distance' sur la fonction <b>get_address</b>. Ce paramètre permet d'indiquer une distance limite pour retenir ou pas l'adresse (adresse non retenue si le point adresse retrouvé est trop éloigné du point du canevas)
  * Correction de 2 bogues sur la fonction <b>get_address</b>
- 
+  
  <i>Version 3.0.1 - 03/11/2020</i>
  * Première version
 tags=expressions, adresse, calcul adresse, symbole orienté sur segment, address, line orientation, field calculator

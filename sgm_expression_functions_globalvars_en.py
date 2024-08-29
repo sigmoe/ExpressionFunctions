@@ -8,8 +8,8 @@
     * Description:   Add custom user functions to QGIS Field calculator. 
     * Specific lib:  None
     * First release: 2018-08-10
-    * Last release:  2022-02-23
-    * Copyright:     (C)2022 SIGMOE
+    * Last release:  2024-08-29
+    * Copyright:     (C)2024 SIGMOE
     * Email:         em at sigmoe.fr
     * License:       GPL v3
     ***************************************************************************
@@ -135,7 +135,7 @@ get_lineangle_doc = """
         Find the angle of the segment (from the target_layer) located under the point of the source layer, with a tolerance to find the segment corresponding to the point.
         <h4>Syntax</h4>
         <div class="syntax"><code>
-        <span class="functionname">get_angle(</span>
+        <span class="functionname">get_lineangle(</span>
         <span class="argument">target_layer, tolerance</span>
         <span class="functionname">)</span>
         </code></div>
@@ -144,10 +144,74 @@ get_lineangle_doc = """
         <table>
         <tr><td class="argument">target_layer</td><td>the name of a currently loaded layer, for example 'myLayer'.</td></tr>
         <tr><td class="argument">tolerance</td><td>tolerance (distance around the point) used to find the segment in the target_layer.</td></tr>
+        </table>
+        <i>WARNING: The 2 processed layers (source and target) must have the same assignedCRS.</i>
         </div>
         <h4>Examples</h4>
         <!-- Show examples of function.-->
         <div class="examples"><ul>
         <li><code>get_lineangle('cana', 0.01)</code></li>
+        </ul></div>
+    """
+geomtouches_startpoint_doc =  """
+        Returns the value of the target_field of the target layer object (target_layer) that touches the first point of the source object.
+        If more than one object is found, returns a single value composed of the concatenation of each value separated by | (list of values).
+        The target layer (target_layer) must be of point geometry, and the source layer of line geometry.
+        <h4>Syntax</h4>
+        <div class="syntax"><code>
+        <span class="functionname">geomtouches_startpoint(</span>
+        <span class="argument">target_layer, target_field</span>
+        <span class="functionname">)</span>
+        </code></div>
+        <h4>Arguments</h4>
+        <div class="arguments">
+        <table>
+        <tr><td class="argument">target_layer</td><td>name of the target layer to process, for example 'Regards'.</td></tr>
+        <tr><td class="argument">target_field</td><td>name of the target_layer field from which you want to retrieve the value, for example 'numero'.
+        <br/>If target_field contains the name of several fields separated by +, the result is the concatenation of the value of each field (values separated by a space).
+        <br/>If target_field is equal to '$geometry', returns the WKT geometry of the object found in the target layer.
+        <br/>If target_field is equal to '$id' , returns the object number (id) found in the target layer.</td></tr>
+        </table>
+        <i>The number of objects processed is limited to 100000 to avoid excessively long processing.</i>
+        <br/><i>ATTENTION: The 2 processed layers (source and target) must have the same CRS assigned.</i>
+        </div>
+        <h4>Examples</h4>
+        <!-- Show examples of function.-->
+        <div class="examples"><ul>
+        <li><code>geomtouches_startpoint('Regards','cote tampon')</code></li>
+        <li><code>geomtouches_startpoint('Regards','identifiant+cote tampon')</code></li>
+        <li><code>geomtouches_startpoint('Regards','$geometry')</code></li>
+        <li><code>geomtouches_startpoint('Regards','$id')</code></li>
+        </ul></div>
+    """
+geomtouches_endpoint_doc = """
+        Returns the value of the target_field of the target layer object (target_layer) that touches the end point of the source object.
+        If more than one object is found, returns a single value composed of the concatenation of each value separated by | (list of values).
+        The target layer (target_layer) must be of point geometry, and the source layer of line geometry.
+        <h4>Syntax</h4>
+        <div class="syntax"><code>
+        <span class="functionname">geomtouches_endpoint(</span>
+        <span class="argument">target_layer, target_field</span>
+        <span class="functionname">)</span>
+        </code></div>
+        <h4>Arguments</h4>
+        <div class="arguments">
+        <table>
+        <tr><td class="argument">target_layer</td><td>name of the target layer to process, for example 'Regards'.</td></tr>
+        <tr><td class="argument">target_field</td><td>name of the target_layer field from which you want to retrieve the value, for example 'numero'.
+        <br/>If target_field contains the name of several fields separated by +, the result is the concatenation of the value of each field (values separated by a space).
+        <br/>If target_field is equal to '$geometry', returns the WKT geometry of the object found in the target layer.
+        <br/>If target_field is equal to '$id' , returns the object number (id) found in the target layer.</td></tr>
+        </table>
+        <i>The number of objects processed is limited to 100000 to avoid excessively long processing.</i>
+        <br/><i>ATTENTION: The 2 processed layers (source and target) must have the same CRS assigned.</i>
+        </div>
+        <h4>Examples</h4>
+        <!-- Show examples of function.-->
+        <div class="examples"><ul>
+        <li><code>geomtouches_endpoint('Regards','cote tampon')</code></li>
+        <li><code>geomtouches_endpoint('Regards','identifiant+cote tampon')</code></li>
+        <li><code>geomtouches_endpoint('Regards','$geometry')</code></li>
+        <li><code>geomtouches_endpoint('Regards','$id')</code></li>
         </ul></div>
     """
